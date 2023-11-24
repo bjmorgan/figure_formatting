@@ -14,3 +14,10 @@ pip install .
 ## Example usage:
 See the [examples](./examples) directory.
 
+### Using the defaults:
+After installing the package, you can include the following in any plotting scripts:
+```python
+from figure_formatting import figure_formatting as ff
+
+ff.set_formatting()
+```

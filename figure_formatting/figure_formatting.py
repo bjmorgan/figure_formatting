@@ -1,7 +1,14 @@
-from matplotlib import rc
-from matplotlib import rcParams
-from matplotlib import cycler
 from collections import OrderedDict
+from pathlib import Path
+
+from fontTools.ttLib import TTCollection
+from matplotlib import cycler, font_manager, get_cachedir, rcParams
+
+# Helvetica Neue ships on macOS as a font collection. matplotlib reads only the
+# first face of a collection, so the italic and bold faces used for maths are
+# extracted and registered separately (see register_helvetica_neue).
+HELVETICA_NEUE = '/System/Library/Fonts/HelveticaNeue.ttc'
+HELVETICA_NEUE_FACES = {'Bold': 1, 'Italic': 2}   # face indices in the collection
 
 # ---------------------------------------------------
 # Color sets
@@ -53,9 +60,9 @@ formatting = {'font.family': 'sans-serif',
                                   'Helvetica',
                                   'DejaVu Sans'],
               'mathtext.fontset': 'custom',
-              'mathtext.rm': f'Helvetica',
-              'mathtext.it': f'Helvetica:italic',
-              'mathtext.bf': f'Helvetica',
+              'mathtext.rm': 'Helvetica Neue',
+              'mathtext.it': 'Helvetica Neue:italic',
+              'mathtext.bf': 'Helvetica Neue:bold',
               'font.size': fontsize,
               'axes.formatter.limits': (-3,3),
               'xtick.major.pad': 3,
@@ -90,9 +97,26 @@ formatting = {'font.family': 'sans-serif',
               'figure.dpi': 127,
               'figure.figsize': (3.15, 1.95)} # Default size = landscape (8 cm width + golden ratio)
 
-def set_formatting(Dict: formatting=formatting) -> None:
-    for k, v in formatting.items():
-        rcParams[k] = v
+def register_helvetica_neue() -> None:
+    """Register the Helvetica Neue italic and bold faces with matplotlib.
+
+    Each face is extracted once to matplotlib's cache directory. Does nothing
+    if the collection is not installed, in which case matplotlib falls back to
+    its default fonts.
+    """
+    if not Path(HELVETICA_NEUE).exists():
+        return
+    cache = Path(get_cachedir()) / 'figure_formatting'
+    cache.mkdir(exist_ok=True)
+    for style, index in HELVETICA_NEUE_FACES.items():
+        path = cache / f'HelveticaNeue-{style}.ttf'
+        if not path.exists():
+            TTCollection(HELVETICA_NEUE).fonts[index].save(path)
+        font_manager.fontManager.addfont(path)
+
+def set_formatting(formatting: dict = formatting) -> None:
+    register_helvetica_neue()
+    rcParams.update(formatting)
 
 def set_palette(palette: OrderedDict) -> None:
     color_cycle = palette.values()

@@ -19,6 +19,6 @@ setup(
     url='https://github.com/bjmorgan/figure_formatting', 
     download_url='https://github.com/bjmorgan/figure_formatting/archive/{}.tar.gz'.format(VERSION),
     license='MIT',
-    install_requires=['matplotlib'],
+    install_requires=['matplotlib', 'fonttools'],
     python_requires='>=3.7'
     )
